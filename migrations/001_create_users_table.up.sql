@@ -1,6 +1,6 @@
 -- 创建用户表
 
-CREATE TABLE users (
+CREATE TABLE users IF Not Exists (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,

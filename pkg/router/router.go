@@ -1,16 +1,18 @@
+// router/router.go
 package router
 
 import (
-	"webChatGo/pkg/controllers"
-
 	"github.com/gorilla/mux"
 )
 
 func SetupRouter() *mux.Router {
 	router := mux.NewRouter()
 
-	// 用户注册路由
-	router.HandleFunc("/register", controllers.Register).Methods("POST")
+	// 注册用户相关路由
+	UserRoutes(router)
+
+	// 注册聊天相关路由
+	// ChatRoutes(router)
 
 	return router
 }
