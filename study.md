@@ -64,9 +64,109 @@
 
 ### `net/http`
 
+## 4、grpc的工作流程？
+
+首先我们要编写proto文件，
+
+然后执行以下命令
+
+```go
+protoc go-out=. user.proto //我们需要将这个user.proto替换为你项目下proto文件的实际路径
+protoc go-grpc-out=. user.proto 
+
+//执行上面的命令后会在项目的指定路径下生成 grpC.pb.go与pb.go后缀的文件
+```
+
+然后我们需要编写serve端代码，主要是为了实现具体的函数功能
 
 
 
+然后我们需要编写client端代码，实现对serve端代码的调用
+
+
+
+1. **定义服务和方法**：
+   
+   - 首先，在 Protobuf 文件中定义服务和方法。例如，在 `user.proto` 中定义了 `UserService` 服务和 `GetUser` 方法。
+- 通过 `protoc` 工具生成 Golang 代码（`grpc.pb.go` 和 `user.pb.go`），这些文件包含了与服务相关的所有接口和消息类型。
+   
+2. **在服务器端实现服务接口**：
+   - 在你的服务器实现中，创建一个结构体并嵌入 `pb.UnimplementedUserServiceServer`，例如：
+     ```go
+     type server struct {
+         pb.UnimplementedUserServiceServer
+     }
+     ```
+   - 实现接口中的方法，例如 `GetUser`，提供具体的业务逻辑：
+     ```go
+     func (s *server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+         // 处理请求并返回响应
+     }
+     ```
+
+3. **注册服务**：
+   
+- 在 `main` 函数中，通过 `pb.RegisterUserServiceServer(srv, &server{})` 将实现了接口的结构体注册到 gRPC 服务器上。这使得服务器知道如何处理特定的 RPC 方法。
+   
+4. **启动 gRPC 服务器**：
+   
+   - 使用 `srv.Serve(lis)` 启动服务器，开始监听来自客户端的请求。
+
+### 客户端发起请求
+
+5. **客户端调用方法**：
+   - 客户端使用生成的客户端 API 调用 `GetUser` 方法。例如：
+     ```go
+     resp, err := client.GetUser(context.Background(), &pb.GetUserRequest{Id: "some-id"})
+     ```
+   - 这里的 `client.GetUser` 会根据 `GetUser` 方法名查找对应的 RPC 调用路径，并通过网络发送请求。
+
+6. **gRPC 框架处理请求**：
+   - gRPC 框架会根据请求的完整方法名称（如 `/user.UserService/GetUser`）在已注册的服务中查找相应的处理函数。
+   - 找到后，它会调用你在服务器实现中定义的对应方法（例如 `GetUser`），并传递上下文和请求对象。
+
+7. **执行业务逻辑**：
+   
+- 在你实现的 `GetUser` 方法中，执行必要的业务逻辑，比如查询数据库或其他存储，处理请求数据，并构造 `GetUserResponse` 对象作为响应。
+   
+8. **返回结果给客户端**：
+   - 执行完毕后，将结果返回给 gRPC 框架，框架会把响应序列化并发送回客户端。
+   - 客户端接收到响应后，可以对其进行处理。
+
+### 综述
+
+综上所述，工作流程如下：
+
+- **定义**：在 Protobuf 文件中定义服务及其方法。
+- **生成**：使用 `protoc` 生成 gRPC 代码。
+- **实现**：在服务器端实现接口中的每个方法，提供具体的业务逻辑。
+- **注册**：将实现注册到 gRPC 服务器。
+- **调用**：客户端调用对应的方法，gRPC 框架负责路由请求到合适的处理函数。
+- **处理**：服务器执行具体的业务逻辑，并返回结果给客户端。
+
+这个过程确保了 gRPC 的高效性和灵活性，使得不同语言和平台之间可以无缝通信。
+
+## 5.如何在项目里面使用grpc?
+
+1.先初始化项目
+
+`go mod init projectName`
+
+2.安装 `grpc`
+
+`go get google.golang.org/grpc`
+
+3.然后安装将 `.proto` 文件编译为 Go 语言中的 gRPC 相关代码的插件
+
+`go get google.golang.org/grpc/cmd/protoc-gen-go-grpc `
+
+4.新建 `.proto`文件,在里面编写代码
+
+看下面的示例:
+
+```go
+
+```
 
 
 
